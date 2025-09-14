@@ -331,14 +331,14 @@ async function processSelectedEntries() {
  * Vector generator interceptor function
  * This function is called before each chat generation
  */
-globalThis.vectorGeneratorInt = async function (prompt, chatHistory, characters, name1, name2) {
-    console.log('Semantix: Interceptor called');
+globalThis.vectorGeneratorInt = async function (chat, contextSize, abort, type) {
+    console.log('Semantix: Interceptor called with type:', type);
     
-    // Get the latest user message from the chat history
-    const latestMessage = chatHistory.length > 0 ? chatHistory[chatHistory.length - 1].mes : '';
+    // Get the latest user message from the chat
+    const latestMessage = chat && Array.isArray(chat) && chat.length > 0 ? chat[chat.length - 1].mes : '';
     
     if (!latestMessage) {
-        return prompt;
+        return { chat, contextSize, abort };
     }
     
     try {
@@ -377,19 +377,21 @@ globalThis.vectorGeneratorInt = async function (prompt, chatHistory, characters,
                 .map(result => result.payload.content)
                 .join('\n\n');
             
-            // Inject the relevant entries into the prompt
-            const injectedPrompt = `[Relevant World Info:\n${relevantEntries}\n]\n\n${prompt}`;
+            // Inject the relevant entries at the beginning of the first message
+            if (chat && chat.length > 0) {
+                const firstMessage = chat[0];
+                firstMessage.mes = `[Relevant World Info:\n${relevantEntries}\n]\n\n${firstMessage.mes}`;
+            }
             
-            console.log('Semantix: Injected relevant world info into prompt');
-            return injectedPrompt;
+            console.log('Semantix: Injected relevant world info into chat');
         }
         
     } catch (error) {
         console.error('Semantix: Error in interceptor', error);
-        // If there's an error, just return the original prompt
+        // If there's an error, just continue with the original chat
     }
     
-    return prompt;
+    return { chat, contextSize, abort };
 };
 
 /**
