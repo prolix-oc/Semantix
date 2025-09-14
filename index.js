@@ -48,12 +48,15 @@ function initializeSettings() {
     return extension_settings[MODULE_NAME];
 }
 
+let worldBookList = {};
+
 /**
  * Create main menu UI
  */
 function createUI() {
     console.log('Semantix: Creating UI...');
-    
+    worldBookList = loadWorldInfo("Complete ZZZ Lorebook")
+    console.log(`Got these entries: ${worldBookList}`)
     try {
         // Validate that jQuery and required elements are available
         if (typeof $ === 'undefined') {
