@@ -77,7 +77,7 @@ function createUI() {
             </div>
         `);
         
-        await extensionsMenu.append(menuItem);
+        extensionsMenu.append(menuItem);
         console.log('Semantix: UI created successfully');
         
     } catch (error) {
