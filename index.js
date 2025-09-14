@@ -1,15 +1,11 @@
-import { getContext, extension_settings, saveSettingsDebounced } from "../../../extensions.js";
-import { eventSource, event_types, chat, chat_metadata } from "../../../../script.js";
-import { world_info } from "../../../../world-info.js";
-import { Popup, POPUP_TYPE } from "../../../popup.js";
-import { Handlebars } from '../../../lib.js';
+import { eventSource, event_types, chat, chat_metadata, saveSettingsDebounced, characters, this_chid, name1, name2 } from '../../../../script.js';
+import { Popup, POPUP_TYPE } from '../../../popup.js';
+import { extension_settings, saveMetadataDebounced } from '../../../extensions.js';
+import { METADATA_KEY, world_names, loadWorldInfo } from '../../../world-info.js';
+import { lodash, Handlebars, DOMPurify } from '../../../../lib.js';
 import { settingsTemplate } from './templates.js';
-
-// Register required Handlebars helper
-Handlebars.registerHelper('eq', function(a, b) {
-    return a === b;
-});
-
+import { editGroup } from '../../../group-chats.js';
+export { initializeSettings };
 
 const MODULE_NAME = 'Semantix';
 let hasBeenInitialized = false;
@@ -36,7 +32,7 @@ const defaultSettings = {
             headers: {},
             defaultParams: {
                 normalize: true,
-                truncate: true
+                truncate: false
             }
         }
     }
@@ -91,7 +87,6 @@ function createUI() {
  * Setup event listeners
  */
 function setupEventListeners() {
-    const { eventSource, event_types } = getContext();
     console.log('Semantix: Setting up event listeners...');
     
     // Add click listener for menu item
@@ -176,8 +171,15 @@ function getSelectionData() {
         return null;
     }
     
-    // Get world info entries - use the correct world_info structure
-    const worldInfoData = world_info;
+    // Get world info entries - check for world_info global
+    let worldInfoData = null;
+    if (typeof world_info !== 'undefined') {
+        worldInfoData = world_info;
+    }
+    
+    if (!worldInfoData || !worldInfoData.entries) {
+        return null;
+    }
     
     // Find start and end entries
     const startEntry = worldInfoData.entries?.find(entry => entry.uid == currentVectorizationState.start);
@@ -314,8 +316,11 @@ async function processSelectedEntries() {
     }
     
     try {
-        // Get the world info data - use correct structure
-        const worldInfoData = world_info;
+        // Get the world info data - check for world_info global
+        let worldInfoData = null;
+        if (typeof world_info !== 'undefined') {
+            worldInfoData = world_info;
+        }
         
         if (!worldInfoData || !worldInfoData.entries) {
             throw new Error('No world info available');
@@ -406,8 +411,12 @@ globalThis.vectorGeneratorInt = async function (chat, contextSize, abort, type) 
         
         const baseUrl = provider.baseUrl || 'http://localhost:8000';
         
-        // Validate world info - use correct structure
-        const worldInfoData = world_info;
+        // Validate world info - check for world_info global
+        let worldInfoData = null;
+        if (typeof world_info !== 'undefined') {
+            worldInfoData = world_info;
+        }
+        
         if (!worldInfoData) {
             console.log('Semantix: World info not available');
             return { chat, contextSize, abort };
@@ -705,7 +714,7 @@ async function init() {
     }
 }
 
-// Initialize when ready - Use proper SillyTavern extension pattern
+// Initialize when ready
 $(document).ready(() => {
     if (eventSource && event_types.APP_READY) {
         eventSource.on(event_types.APP_READY, init);
@@ -713,5 +722,7 @@ $(document).ready(() => {
     setTimeout(init, 2000);
 });
 
-// Export required for SillyTavern extension system
-export { initializeSettings };
+// Add CSS classes helper for Handlebars
+Handlebars.registerHelper('eq', function(a, b) {
+    return a === b;
+});
