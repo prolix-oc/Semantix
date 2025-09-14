@@ -86,15 +86,15 @@ async function createUI() {
     }
 }
 
-function logLorebook() {
-  if (world_info && world_info.length > 0) {
-    console.log("Active Lorebook Entries:", world_info);
+function logChatWorldBook() {
+  if (worldBookList && worldBookList.length > 0) {
+    console.log("Active Lorebook Entries:", worldBookList);
     // You can now iterate over the world_info array and use the data
     world_info.forEach(entry => {
       console.log(`Keyword(s): ${entry.key.join(', ')}, Content: ${entry.content}`);
     });
   } else {
-    console.log(`Semantix: Got these entries: ${JSON.stringify(worldBookList)}`);
+    console.log(`Semantix: No WI entries found for this chat.`);
   }
 }
 
@@ -184,15 +184,16 @@ function showSettingsPopup() {
 /**
  * Get selection data for the settings popup
  */
-function getSelectionData() {
+async function getSelectionData() {
     if (!currentVectorizationState.start || !currentVectorizationState.end) {
         return null;
     }
     
-    // Get world info entries - check for world_info global
     let worldInfoData = null;
     if (typeof world_info !== 'undefined') {
         worldInfoData = world_info;
+    } else {
+        worldInfoData = await loadWorldInfo("Complete ZZZ Lore")
     }
     
     if (!worldInfoData || !worldInfoData.entries) {
