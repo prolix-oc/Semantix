@@ -1,8 +1,14 @@
 import { getContext, extension_settings, saveSettingsDebounced } from "../../../extensions.js";
-import { eventSource, event_types } from "../../../../script.js";
+import { eventSource, event_types, chat, chat_metadata } from "../../../../script.js";
 import { world_info } from "../../../../world-info.js";
 import { Popup, POPUP_TYPE } from "../../../popup.js";
+import { Handlebars } from '../../../lib.js';
 import { settingsTemplate } from './templates.js';
+
+// Register required Handlebars helper
+Handlebars.registerHelper('eq', function(a, b) {
+    return a === b;
+});
 
 
 const MODULE_NAME = 'Semantix';
@@ -707,8 +713,5 @@ $(document).ready(() => {
     setTimeout(init, 2000);
 });
 
-// Add required Handlebars helper for templates
-import { Handlebars } from '../../../lib.js';
-Handlebars.registerHelper('eq', function(a, b) {
-    return a === b;
-});
+// Export required for SillyTavern extension system
+export { initializeSettings };
