@@ -679,7 +679,7 @@ async function init() {
         
         // Setup event listeners
         console.log('Semantix: Setting up event listeners...');
-        setupEventListeners(context);
+        setupEventListeners();
         
         // Process any world info entries that are already on the screen
         try {
@@ -705,4 +705,10 @@ $(document).ready(() => {
         eventSource.on(event_types.APP_READY, init);
     }    
     setTimeout(init, 2000);
+});
+
+// Add required Handlebars helper for templates
+import { Handlebars } from '../../../lib.js';
+Handlebars.registerHelper('eq', function(a, b) {
+    return a === b;
 });
