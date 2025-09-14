@@ -709,7 +709,7 @@ async function init() {
         
         // Create UI
         console.log('Semantix: Creating UI...');
-        createUI();
+        await createUI();
         
         // Setup event listeners
         console.log('Semantix: Setting up event listeners...');
