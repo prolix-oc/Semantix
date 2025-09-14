@@ -53,8 +53,8 @@ let worldBookList = {};
 /**
  * Create main menu UI
  */
-async function createUI() {
-    worldBookList = await loadWorldInfo("Complete ZZZ Lorebook")
+function createUI() {
+    worldBookList = loadWorldInfo("Complete ZZZ Lorebook")
     console.log(`Got these entries: ${JSON.stringify(worldBookList)}`)
     console.log('Semantix: Creating UI...');
     try {
@@ -709,7 +709,7 @@ async function init() {
         
         // Create UI
         console.log('Semantix: Creating UI...');
-        await createUI();
+        createUI();
         
         // Setup event listeners
         console.log('Semantix: Setting up event listeners...');
