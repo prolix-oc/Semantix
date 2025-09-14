@@ -53,10 +53,10 @@ let worldBookList = {};
 /**
  * Create main menu UI
  */
-function createUI() {
-    console.log('Semantix: Creating UI...');
-    worldBookList = loadWorldInfo("Complete ZZZ Lorebook")
+async function createUI() {
+    worldBookList = await loadWorldInfo("Complete ZZZ Lorebook")
     console.log(`Got these entries: ${worldBookList}`)
+    console.log('Semantix: Creating UI...');
     try {
         // Validate that jQuery and required elements are available
         if (typeof $ === 'undefined') {
@@ -77,7 +77,7 @@ function createUI() {
             </div>
         `);
         
-        extensionsMenu.append(menuItem);
+        await extensionsMenu.append(menuItem);
         console.log('Semantix: UI created successfully');
         
     } catch (error) {
