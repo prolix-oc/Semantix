@@ -168,12 +168,12 @@ function getSelectionData() {
         return null;
     }
     
-    // Get world info entries
-    const worldInfo = world_info[world_info.world_info];
+    // Get world info entries - use the correct world_info structure
+    const worldInfoData = world_info;
     
     // Find start and end entries
-    const startEntry = worldInfo.entries.find(entry => entry.uid == currentVectorizationState.start);
-    const endEntry = worldInfo.entries.find(entry => entry.uid == currentVectorizationState.end);
+    const startEntry = worldInfoData.entries?.find(entry => entry.uid == currentVectorizationState.start);
+    const endEntry = worldInfoData.entries?.find(entry => entry.uid == currentVectorizationState.end);
     
     if (!startEntry || !endEntry) {
         return null;
@@ -306,17 +306,17 @@ async function processSelectedEntries() {
     }
     
     try {
-        // Get the world info data
-        const worldInfo = world_info[world_info.world_info];
+        // Get the world info data - use correct structure
+        const worldInfoData = world_info;
         
-        if (!worldInfo) {
+        if (!worldInfoData || !worldInfoData.entries) {
             throw new Error('No world info available');
         }
         
         // Extract the selected entries
         const selectedEntries = [];
         for (let i = currentVectorizationState.start; i <= currentVectorizationState.end; i++) {
-            const entry = worldInfo.entries.find(e => e.uid == i);
+            const entry = worldInfoData.entries.find(e => e.uid == i);
             if (entry) {
                 selectedEntries.push(entry);
             }
@@ -398,16 +398,25 @@ globalThis.vectorGeneratorInt = async function (chat, contextSize, abort, type) 
         
         const baseUrl = provider.baseUrl || 'http://localhost:8000';
         
-        // Validate world info
-        if (!world_info || !world_info.world_info) {
+        // Validate world info - use correct structure
+        const worldInfoData = world_info;
+        if (!worldInfoData) {
             console.log('Semantix: World info not available');
             return { chat, contextSize, abort };
+        }
+        
+        // Get the current world info name - check various possible locations
+        let worldInfoName = 'default';
+        if (worldInfoData.world_info) {
+            worldInfoName = worldInfoData.world_info;
+        } else if (worldInfoData.name) {
+            worldInfoName = worldInfoData.name;
         }
         
         // Prepare the search payload
         const searchPayload = {
             queryText: latestMessage,
-            collectionName: `worldbook_${world_info.world_info}`,
+            collectionName: `worldbook_${worldInfoName}`,
             limit: 5,
             rerank: true
         };
