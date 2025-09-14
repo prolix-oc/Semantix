@@ -1,10 +1,9 @@
 import { getContext, extension_settings, saveSettingsDebounced } from "../../../extensions.js";
-const context = getContext();
-const { eventSource, event_types } = getContext();
-
+import { eventSource, event_types } from "../../../../script.js";
 import { world_info } from "../../../../world-info.js";
 import { Popup, POPUP_TYPE } from "../../../popup.js";
 import { settingsTemplate } from './templates.js';
+
 
 const MODULE_NAME = 'Semantix';
 let hasBeenInitialized = false;
@@ -85,7 +84,8 @@ function createUI() {
 /**
  * Setup event listeners
  */
-function setupEventListeners(context) {
+function setupEventListeners() {
+    const { eventSource, event_types } = getContext();
     console.log('Semantix: Setting up event listeners...');
     
     // Add click listener for menu item
