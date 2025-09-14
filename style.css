@@ -1,0 +1,132 @@
+/* --- CORE BUTTON STYLES --- */
+
+/* Base styling for vectorization buttons */
+.semantix-vectorize-start,
+.semantix-vectorize-end {
+    /* Ensure buttons are visible with good base styling */
+    background: color-mix(in srgb, var(--SmartThemeBodyColor, #dcdcd2) 20%, transparent 80%);
+    color: var(--SmartThemeBodyColor, #dcdcd2);
+    border: 1px solid color-mix(in srgb, var(--SmartThemeBodyColor, #dcdcd2) 40%, transparent 60%);
+    border-radius: 4px;
+    padding: 4px 6px;
+    margin: 0 3px;
+    transition: all 0.2s ease;
+    opacity: 0.7;
+}
+
+.semantix-vectorize-start:hover,
+.semantix-vectorize-end:hover {
+    opacity: 1;
+    background: color-mix(in srgb, var(--SmartThemeBodyColor, #dcdcd2) 30%, transparent 70%);
+    transform: scale(1.05);
+}
+
+/* --- ACTIVE STATE (ON) --- */
+.world_entry .semantix-vectorize-start.on,
+.world_entry .semantix-vectorize-end.on {
+    /* Bright, visible active state with glow */
+    background: color-mix(in srgb, var(--SmartThemeQuoteColor, #e18a24) 80%, transparent 20%) !important;
+    color: var(--SmartThemeBlurTintColor, #171717) !important;
+    border-color: var(--SmartThemeQuoteColor, #e18a24) !important;
+    box-shadow: 0 0 8px color-mix(in srgb, var(--SmartThemeQuoteColor, #e18a24) 50%, transparent 50%);
+    opacity: 1 !important;
+    font-weight: bold;
+}
+
+.world_entry .semantix-vectorize-start.on:hover,
+.world_entry .semantix-vectorize-end.on:hover {
+    background: var(--SmartThemeQuoteColor, #e18a24) !important;
+    transform: scale(1.1);
+    box-shadow: 0 0 12px color-mix(in srgb, var(--SmartThemeQuoteColor, #e18a24) 60%, transparent 40%);
+}
+
+/* --- VALID SELECTION POINTS --- */
+.semantix-vectorize-start.valid-start-point,
+.semantix-vectorize-end.valid-end-point {
+    /* Pulsing green glow for valid selection points */
+    background: color-mix(in srgb, #4CAF50 60%, transparent 40%);
+    color: var(--SmartThemeBlurTintColor, #171717);
+    border-color: #4CAF50;
+    animation: semantix-pulse 2s infinite;
+    opacity: 1;
+}
+
+.semantix-vectorize-start.valid-start-point:hover,
+.semantix-vectorize-end.valid-end-point:hover {
+    background: #4CAF50;
+    animation: none;
+    transform: scale(1.1);
+    box-shadow: 0 0 8px color-mix(in srgb, #4CAF50 50%, transparent 50%);
+}
+
+/* --- IN-SCENE RANGE MARKERS --- */
+.semantix-vectorize-start.in-scene,
+.semantix-vectorize-end.in-scene {
+    /* Subtle highlight for entries in the selected range */
+    background: color-mix(in srgb, var(--SmartThemeQuoteColor, #e18a24) 40%, transparent 60%);
+    color: var(--SmartThemeBodyColor, #dcdcd2);
+    border-color: color-mix(in srgb, var(--SmartThemeQuoteColor, #e18a24) 60%, transparent 40%);
+    opacity: 0.8;
+}
+
+.semantix-vectorize-start.in-scene:hover,
+.semantix-vectorize-end.in-scene:hover {
+    background: color-mix(in srgb, var(--SmartThemeQuoteColor, #e18a24) 60%, transparent 40%);
+    transform: scale(1.05);
+    opacity: 1;
+}
+
+/* --- ANIMATIONS --- */
+
+/* Pulse animation for valid selection points */
+@keyframes semantix-pulse {
+    0% {
+        box-shadow: 0 0 0 0 color-mix(in srgb, #4CAF50 70%, transparent 30%);
+    }
+    50% {
+        box-shadow: 0 0 0 4px color-mix(in srgb, #4CAF50 30%, transparent 70%);
+    }
+    100% {
+        box-shadow: 0 0 0 0 color-mix(in srgb, #4CAF50 0%, transparent 100%);
+    }
+}
+
+/* --- MAIN EXTENSION MENU BUTTON --- */
+#semantix-menu-item i {
+    margin-right: 8px;
+    width: 16px;
+    text-align: center;
+}
+
+/* --- PROCESSING STATE STYLING --- */
+.semantix-processing {
+    opacity: 0.6;
+    pointer-events: none;
+    position: relative;
+}
+
+.semantix-processing::after {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: repeating-linear-gradient(
+        45deg,
+        transparent,
+        transparent 10px,
+        color-mix(in srgb, var(--SmartThemeBodyColor, #dcdcd2) 10%, transparent 90%) 10px,
+        color-mix(in srgb, var(--SmartThemeBodyColor, #dcdcd2) 10%, transparent 90%) 20px
+    );
+    animation: semantix-processing 1s linear infinite;
+}
+
+@keyframes semantix-processing {
+    0% {
+        background-position: 0 0;
+    }
+    100% {
+        background-position: 28px 0;
+    }
+}

@@ -1,0 +1,14 @@
+{
+  "name": "semantix",
+  "display_name": "Semantix",
+  "author": "Prolix OCs",
+  "version": "0.1.0",
+  "description": "Process your world books into something that can ACTUALLY be searched properly. Use proper semantic and vector similarity searches to dynamically inject world lore into your RPs.",
+  "js": "index.js",
+  "css": "style.css",
+  "homePage": "https://github.com/prolix-oc/SillyTavern-Semantix.git",
+  "requires": [],
+  "optional": [],
+  "loading_order": 1,
+  "generate_interceptor": "vectorGeneratorInt"
+}
