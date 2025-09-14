@@ -83,6 +83,18 @@ function createUI() {
     }
 }
 
+function getActiveLorebook() {
+  if (world_info && world_info.length > 0) {
+    console.log("Active Lorebook Entries:", world_info);
+    // You can now iterate over the world_info array and use the data
+    world_info.forEach(entry => {
+      console.log(`Keyword(s): ${entry.key.join(', ')}, Content: ${entry.content}`);
+    });
+  } else {
+    console.log("No active lorebook or no entries found.");
+  }
+}
+
 /**
  * Setup event listeners
  */
@@ -100,7 +112,10 @@ function setupEventListeners() {
     } else {
         console.warn('Semantix: World info panel events not available');
     }
-    
+    if (eventSource && event_types && event_types.CHAT_CHANGED) {
+        eventSource.on(event_types.WORLDINFO_PANEL_OPEN, getActiveLorebook);
+
+    }
     // Listen for new world info entries being added
     try {
         const worldInfoContainer = document.getElementById('world_popup_entries_list');
