@@ -49,44 +49,79 @@ function initializeSettings() {
  * Create main menu UI
  */
 function createUI() {
-    const menuItem = $(`
-        <div id="semantix-menu-item-container" class="extension_container interactable" tabindex="0">            
-            <div id="semantix-menu-item" class="list-group-item flex-container flexGap5 interactable" tabindex="0">
-                <div class="fa-fw fa-solid fa-wand-magic-sparkles extensionsMenuExtensionButton"></div>
-                <span>Semantix</span>
-            </div>
-        </div>
-    `);
+    console.log('Semantix: Creating UI...');
     
-    $('#extensionsMenu').append(menuItem);
+    try {
+        // Validate that jQuery and required elements are available
+        if (typeof $ === 'undefined') {
+            throw new Error('jQuery not available');
+        }
+        
+        const extensionsMenu = $('#extensionsMenu');
+        if (extensionsMenu.length === 0) {
+            throw new Error('Extensions menu not found');
+        }
+        
+        const menuItem = $(`
+            <div id="semantix-menu-item-container" class="extension_container interactable" tabindex="0">            
+                <div id="semantix-menu-item" class="list-group-item flex-container flexGap5 interactable" tabindex="0">
+                    <div class="fa-fw fa-solid fa-wand-magic-sparkles extensionsMenuExtensionButton"></div>
+                    <span>Semantix</span>
+                </div>
+            </div>
+        `);
+        
+        extensionsMenu.append(menuItem);
+        console.log('Semantix: UI created successfully');
+        
+    } catch (error) {
+        console.error('Semantix: Error creating UI:', error);
+        throw error;
+    }
 }
 
 /**
  * Setup event listeners
  */
 function setupEventListeners() {
+    console.log('Semantix: Setting up event listeners...');
+    
+    // Add click listener for menu item
     $(document).on('click', '#semantix-menu-item', showSettingsPopup);
+    console.log('Semantix: Menu item click listener added');
     
     // Listen for world info panel being opened
-    eventSource.on(event_types.WORLDINFO_PANEL_OPEN, processExistingWorldInfoEntries);
+    if (eventSource && event_types && event_types.WORLDINFO_PANEL_OPEN) {
+        eventSource.on(event_types.WORLDINFO_PANEL_OPEN, processExistingWorldInfoEntries);
+        console.log('Semantix: World info panel open listener added');
+    } else {
+        console.warn('Semantix: World info panel events not available');
+    }
     
     // Listen for new world info entries being added
-    const worldInfoContainer = document.getElementById('world_popup_entries_list');
-    if (worldInfoContainer) {
-        const observer = new MutationObserver((mutations) => {
-            mutations.forEach((mutation) => {
-                mutation.addedNodes.forEach((node) => {
-                    if (node.nodeType === Node.ELEMENT_NODE && node.classList.contains('world_entry')) {
-                        createVectorizationButtons(node);
-                    }
+    try {
+        const worldInfoContainer = document.getElementById('world_popup_entries_list');
+        if (worldInfoContainer) {
+            const observer = new MutationObserver((mutations) => {
+                mutations.forEach((mutation) => {
+                    mutation.addedNodes.forEach((node) => {
+                        if (node.nodeType === Node.ELEMENT_NODE && node.classList.contains('world_entry')) {
+                            createVectorizationButtons(node);
+                        }
+                    });
                 });
             });
-        });
-        
-        observer.observe(worldInfoContainer, {
-            childList: true,
-            subtree: true
-        });
+            
+            observer.observe(worldInfoContainer, {
+                childList: true,
+                subtree: true
+            });
+            console.log('Semantix: World info mutation observer added');
+        } else {
+            console.warn('Semantix: World info container not found, mutation observer not added');
+        }
+    } catch (error) {
+        console.error('Semantix: Error setting up mutation observer:', error);
     }
 }
 
@@ -334,26 +369,50 @@ async function processSelectedEntries() {
 globalThis.vectorGeneratorInt = async function (chat, contextSize, abort, type) {
     console.log('Semantix: Interceptor called with type:', type);
     
-    // Get the latest user message from the chat
-    const latestMessage = chat && Array.isArray(chat) && chat.length > 0 ? chat[chat.length - 1].mes : '';
-    
-    if (!latestMessage) {
-        return { chat, contextSize, abort };
-    }
-    
     try {
+        // Validate inputs
+        if (!chat || !Array.isArray(chat) || chat.length === 0) {
+            console.log('Semantix: No chat data available, returning original');
+            return { chat, contextSize, abort };
+        }
+        
+        // Get the latest user message from the chat
+        const latestMessage = chat[chat.length - 1]?.mes;
+        if (!latestMessage) {
+            console.log('Semantix: No latest message found');
+            return { chat, contextSize, abort };
+        }
+        
         // Get settings
-        const settings = initializeSettings();
+        const settings = extension_settings[MODULE_NAME];
+        if (!settings || !settings.moduleSettings || !settings.embeddingProviders) {
+            console.log('Semantix: Settings not properly initialized');
+            return { chat, contextSize, abort };
+        }
+        
         const provider = settings.embeddingProviders[settings.moduleSettings.defaultProvider];
+        if (!provider) {
+            console.log('Semantix: No embedding provider configured');
+            return { chat, contextSize, abort };
+        }
+        
         const baseUrl = provider.baseUrl || 'http://localhost:8000';
+        
+        // Validate world info
+        if (!world_info || !world_info.world_info) {
+            console.log('Semantix: World info not available');
+            return { chat, contextSize, abort };
+        }
         
         // Prepare the search payload
         const searchPayload = {
             queryText: latestMessage,
-            collectionName: `worldbook_${world_info.world_info}`, // Use world info name as collection
-            limit: 5, // Get top 5 matches
+            collectionName: `worldbook_${world_info.world_info}`,
+            limit: 5,
             rerank: true
         };
+        
+        console.log('Semantix: Sending search request to backend...');
         
         // Send search request to backend
         const response = await fetch(`${baseUrl}/search`, {
@@ -369,21 +428,24 @@ globalThis.vectorGeneratorInt = async function (chat, contextSize, abort, type) 
         }
         
         const searchResult = await response.json();
+        console.log('Semantix: Search completed, results:', searchResult.results?.length || 0);
         
         // If we have results, inject them into the prompt
         if (searchResult.results && searchResult.results.length > 0) {
             // Format the relevant entries
             const relevantEntries = searchResult.results
-                .map(result => result.payload.content)
+                .map(result => result.payload?.content || '')
+                .filter(content => content)
                 .join('\n\n');
             
-            // Inject the relevant entries at the beginning of the first message
-            if (chat && chat.length > 0) {
+            if (relevantEntries) {
+                // Inject the relevant entries at the beginning of the first message
                 const firstMessage = chat[0];
-                firstMessage.mes = `[Relevant World Info:\n${relevantEntries}\n]\n\n${firstMessage.mes}`;
+                if (firstMessage) {
+                    firstMessage.mes = `[Relevant World Info:\n${relevantEntries}\n]\n\n${firstMessage.mes}`;
+                    console.log('Semantix: Injected relevant world info into chat');
+                }
             }
-            
-            console.log('Semantix: Injected relevant world info into chat');
         }
         
     } catch (error) {
@@ -570,47 +632,91 @@ function processExistingWorldInfoEntries() {
  * Initialize the extension
  */
 async function init() {
-    if (hasBeenInitialized) return;
-    hasBeenInitialized = true;
-    console.log('Semantix: Initializing');
-    
-    // Wait for SillyTavern to be ready
-    let attempts = 0;
-    const maxAttempts = 20;
-    
-    while (attempts < maxAttempts) {
-        if ($('#extensionsMenu').length > 0 && eventSource) {
-            break;
-        }
-        await new Promise(resolve => setTimeout(resolve, 500));
-        attempts++;
+    if (hasBeenInitialized) {
+        console.log('Semantix: Already initialized, skipping');
+        return;
     }
     
-    // Initialize settings
-    initializeSettings();
+    console.log('Semantix: Starting initialization...');
     
-    // Create UI
-    createUI();
-    
-    // Setup event listeners
-    setupEventListeners();
-    
-    // Process any world info entries that are already on the screen
     try {
-        processExistingWorldInfoEntries();
-        console.log('Semantix: Processed existing world info entries during initialization');
+        // Wait for SillyTavern to be ready
+        let attempts = 0;
+        const maxAttempts = 20;
+        
+        while (attempts < maxAttempts) {
+            if ($('#extensionsMenu').length > 0 && eventSource && event_types) {
+                console.log('Semantix: Core SillyTavern components detected');
+                break;
+            }
+            await new Promise(resolve => setTimeout(resolve, 500));
+            attempts++;
+        }
+        
+        if (attempts >= maxAttempts) {
+            console.error('Semantix: Timeout waiting for SillyTavern components');
+            return;
+        }
+        
+        // Initialize settings
+        console.log('Semantix: Initializing settings...');
+        initializeSettings();
+        
+        // Create UI
+        console.log('Semantix: Creating UI...');
+        createUI();
+        
+        // Setup event listeners
+        console.log('Semantix: Setting up event listeners...');
+        setupEventListeners();
+        
+        // Process any world info entries that are already on the screen
+        try {
+            console.log('Semantix: Processing existing world info entries...');
+            processExistingWorldInfoEntries();
+            console.log('Semantix: Processed existing world info entries during initialization');
+        } catch (error) {
+            console.error('Semantix: Error processing existing world info entries during init:', error);
+        }
+        
+        hasBeenInitialized = true;
+        console.log('Semantix: Extension loaded successfully');
+        
     } catch (error) {
-        console.error('Semantix: Error processing existing world info entries during init:', error);
+        console.error('Semantix: Critical error during initialization:', error);
+        console.error('Semantix: Stack trace:', error.stack);
     }
-    
-    console.log('Semantix: Extension loaded successfully');
 }
 
-// Initialize when ready
-$(document).ready(() => {
-    if (eventSource && event_types.APP_READY) {
-        eventSource.on(event_types.APP_READY, init);
-    }    
-    // Fallback initialization
-    setTimeout(init, 2000);    
+// Initialize when ready - Use proper SillyTavern extension pattern
+jQuery(async () => {
+    try {
+        console.log('Semantix: Starting initialization...');
+        
+        // Wait for SillyTavern to be fully ready
+        let attempts = 0;
+        const maxAttempts = 30;
+        
+        while (attempts < maxAttempts) {
+            if (typeof eventSource !== 'undefined' && 
+                typeof event_types !== 'undefined' && 
+                $('#extensionsMenu').length > 0) {
+                console.log('Semantix: SillyTavern core components detected');
+                break;
+            }
+            await new Promise(resolve => setTimeout(resolve, 500));
+            attempts++;
+        }
+        
+        if (attempts >= maxAttempts) {
+            console.error('Semantix: Timeout waiting for SillyTavern to be ready');
+            return;
+        }
+        
+        // Initialize the extension
+        await init();
+        
+    } catch (error) {
+        console.error('Semantix: Critical error during initialization:', error);
+    }
 });
