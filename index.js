@@ -1,7 +1,7 @@
-import { eventSource, event_types } from '../../../script.js';
-import { extension_settings, saveSettingsDebounced } from '../../../extensions.js';
-import { world_info } from '../../../world-info.js';
-import { Popup, POPUP_TYPE } from '../../../popup.js';
+import { getContext, extension_settings, saveSettingsDebounced } from "../../../../extensions.js";
+import { eventSource, event_types } from "../../../../script.js";
+import { world_info } from "../../../../world-info.js";
+import { Popup, POPUP_TYPE } from "../../../../popup.js";
 import { settingsTemplate } from './templates.js';
 
 const MODULE_NAME = 'Semantix';
@@ -83,7 +83,7 @@ function createUI() {
 /**
  * Setup event listeners
  */
-function setupEventListeners() {
+function setupEventListeners(context) {
     console.log('Semantix: Setting up event listeners...');
     
     // Add click listener for menu item
@@ -91,8 +91,8 @@ function setupEventListeners() {
     console.log('Semantix: Menu item click listener added');
     
     // Listen for world info panel being opened
-    if (eventSource && event_types && event_types.WORLDINFO_PANEL_OPEN) {
-        eventSource.on(event_types.WORLDINFO_PANEL_OPEN, processExistingWorldInfoEntries);
+    if (context.eventSource && context.event_types && context.event_types.WORLDINFO_PANEL_OPEN) {
+        context.eventSource.on(context.event_types.WORLDINFO_PANEL_OPEN, processExistingWorldInfoEntries);
         console.log('Semantix: World info panel open listener added');
     } else {
         console.warn('Semantix: World info panel events not available');
@@ -668,7 +668,7 @@ async function init() {
         
         // Setup event listeners
         console.log('Semantix: Setting up event listeners...');
-        setupEventListeners();
+        setupEventListeners(context);
         
         // Process any world info entries that are already on the screen
         try {
@@ -693,13 +693,21 @@ jQuery(async () => {
     try {
         console.log('Semantix: Starting initialization...');
         
+        // Get SillyTavern context
+        const context = getContext();
+        if (!context) {
+            throw new Error('Could not get SillyTavern context');
+        }
+        
+        console.log('Semantix: Context obtained successfully');
+        
         // Wait for SillyTavern to be fully ready
         let attempts = 0;
         const maxAttempts = 30;
         
         while (attempts < maxAttempts) {
-            if (typeof eventSource !== 'undefined' && 
-                typeof event_types !== 'undefined' && 
+            if (typeof context.eventSource !== 'undefined' && 
+                typeof context.event_types !== 'undefined' && 
                 $('#extensionsMenu').length > 0) {
                 console.log('Semantix: SillyTavern core components detected');
                 break;
@@ -716,7 +724,10 @@ jQuery(async () => {
         // Initialize the extension
         await init();
         
+        console.log('Semantix: Extension initialization completed successfully');
+        
     } catch (error) {
         console.error('Semantix: Critical error during initialization:', error);
+        console.error('Semantix: Stack trace:', error.stack);
     }
 });
