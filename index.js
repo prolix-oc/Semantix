@@ -1,7 +1,7 @@
 import { eventSource, event_types, chat, chat_metadata, saveSettingsDebounced, characters, this_chid, name1, name2 } from '../../../../script.js';
 import { Popup, POPUP_TYPE } from '../../../popup.js';
 import { extension_settings, saveMetadataDebounced } from '../../../extensions.js';
-import { METADATA_KEY, world_names, loadWorldInfo } from '../../../world-info.js';
+import { METADATA_KEY, world_names, world_info, loadWorldInfo } from '../../../world-info.js';
 import { lodash, Handlebars, DOMPurify } from '../../../../lib.js';
 import { settingsTemplate } from './templates.js';
 import { editGroup } from '../../../group-chats.js';
