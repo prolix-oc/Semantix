@@ -331,7 +331,7 @@ async function processSelectedEntries() {
  * Vector generator interceptor function
  * This function is called before each chat generation
  */
-async function vectorGeneratorInt(prompt, chatHistory, characters, name1, name2) {
+globalThis.vectorGeneratorInt = async function (prompt, chatHistory, characters, name1, name2) {
     console.log('Semantix: Interceptor called');
     
     // Get the latest user message from the chat history
@@ -390,7 +390,7 @@ async function vectorGeneratorInt(prompt, chatHistory, characters, name1, name2)
     }
     
     return prompt;
-}
+};
 
 /**
  * Create vectorization buttons in world info entries
@@ -612,6 +612,3 @@ $(document).ready(() => {
     // Fallback initialization
     setTimeout(init, 2000);    
 });
-
-// Export the interceptor function for SillyTavern to use
-window.vectorGeneratorInt = vectorGeneratorInt;
