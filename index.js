@@ -55,7 +55,7 @@ let worldBookList = {};
  */
 async function createUI() {
     worldBookList = await loadWorldInfo("Complete ZZZ Lorebook")
-    console.log(`Got these entries: ${worldBookList}`)
+    console.log(`Got these entries: ${JSON.stringify(worldBookList)}`)
     console.log('Semantix: Creating UI...');
     try {
         // Validate that jQuery and required elements are available
@@ -86,7 +86,7 @@ async function createUI() {
     }
 }
 
-function getActiveLorebook() {
+function logLorebook() {
   if (world_info && world_info.length > 0) {
     console.log("Active Lorebook Entries:", world_info);
     // You can now iterate over the world_info array and use the data
@@ -94,7 +94,7 @@ function getActiveLorebook() {
       console.log(`Keyword(s): ${entry.key.join(', ')}, Content: ${entry.content}`);
     });
   } else {
-    console.log("No active lorebook or no entries found.");
+    console.log(`Semantix: Got these entries: ${JSON.stringify(worldBookList)}`);
   }
 }
 
@@ -116,7 +116,7 @@ function setupEventListeners() {
         console.warn('Semantix: World info panel events not available');
     }
     if (eventSource && event_types && event_types.CHAT_CHANGED) {
-        eventSource.on(event_types.WORLDINFO_PANEL_OPEN, getActiveLorebook);
+        eventSource.on(event_types.WORLDINFO_PANEL_OPEN, logLorebook());
 
     }
     // Listen for new world info entries being added
